@@ -1,0 +1,34 @@
+name: Publish
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish-origin-simulator:
+    runs-on: large
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to GitHub Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.PACKAGES_GITHUB_TOKEN }}
+
+    - name: Build the origin-simulator docker image
+      env:
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Build the image with a tag that can be referenced.
+        docker build -f Dockerfile.1_14_alpine . -t origin-simulator-dev:latest
+
+        # Tag the image with GitHub container registry
+        docker tag origin-simulator-dev:latest ghcr.io/vizzly-co/origin-simulator-dev:$IMAGE_TAG
+        docker tag origin-simulator-dev:latest ghcr.io/vizzly-co/origin-simulator-dev:latest
+
+        # Push the image to github packages.
+        docker push ghcr.io/vizzly-co/origin-simulator-dev --all-tags
