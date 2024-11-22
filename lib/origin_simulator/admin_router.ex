@@ -9,6 +9,7 @@ defmodule OriginSimulator.AdminRouter do
   get "/status" do
     conn
     |> put_resp_content_type("text/plain")
+    |> allow_cors()
     |> send_resp(200, "ok!")
   end
 
@@ -18,6 +19,7 @@ defmodule OriginSimulator.AdminRouter do
 
     conn
     |> put_resp_content_type("application/json")
+    |> allow_cors()
     |> send_resp(200, Poison.encode!(msg))
   end
 
@@ -26,14 +28,16 @@ defmodule OriginSimulator.AdminRouter do
 
     conn
     |> put_resp_content_type("application/json")
+    |> allow_cors()
     |> send_resp(200, ~s({"cleared": "yes"}))
   end
 
   # TODO: consider ways to bifurcate counts per route, using
-  # OTP state to store count rather than a Plug 
+  # OTP state to store count rather than a Plug
   get "/current_count" do
     conn
     |> put_resp_content_type("application/json")
+    |> allow_cors()
     |> send_resp(200, Poison.encode!(Counter.value()))
   end
 
@@ -41,7 +45,7 @@ defmodule OriginSimulator.AdminRouter do
     # TODO: tofix, origin_simulator currently not handling malformed recipe
     # as `Recipe.parse` hard-wired to output from
     # Plug read i.e. {:ok, binary, any} with `Poison.decode!`
-    # that throws uncaught `Poison.ParseError` exception 
+    # that throws uncaught `Poison.ParseError` exception
     recipe = Recipe.parse(Plug.Conn.read_body(conn))
     response = Simulation.add_recipe(:simulation, recipe)
 
@@ -54,6 +58,7 @@ defmodule OriginSimulator.AdminRouter do
 
     conn
     |> put_resp_content_type(content_type)
+    |> allow_cors()
     |> send_resp(status, body)
   end
 
@@ -63,12 +68,14 @@ defmodule OriginSimulator.AdminRouter do
 
     conn
     |> put_resp_content_type("text/plain")
+    |> allow_cors()
     |> send_resp(200, "ok!")
   end
 
   get "/routes" do
     conn
     |> put_resp_content_type("text/plain")
+    |> allow_cors()
     |> send_resp(200, Simulation.route(:simulation) |> Enum.join("\n"))
   end
 
@@ -81,6 +88,13 @@ defmodule OriginSimulator.AdminRouter do
 
     conn
     |> put_resp_content_type("text/plain")
+    |> allow_cors()
     |> send_resp(200, body)
+  end
+
+  def allow_cors(conn) do
+    conn
+    |> Plug.Conn.put_resp_header("Access-Control-Allow-Origin", "*")
+    |> Plug.Conn.put_resp_header("Access-Control-Allow-Methods", "GET,PUT,POST")
   end
 end
