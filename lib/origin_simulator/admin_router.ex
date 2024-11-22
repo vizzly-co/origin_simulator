@@ -95,6 +95,5 @@ defmodule OriginSimulator.AdminRouter do
   def allow_cors(conn) do
     conn
     |> Plug.Conn.put_resp_header("Access-Control-Allow-Origin", "*")
-    |> Plug.Conn.put_resp_header("Access-Control-Allow-Methods", "GET,PUT,POST")
   end
 end
