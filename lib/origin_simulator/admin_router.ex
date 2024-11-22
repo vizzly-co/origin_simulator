@@ -92,8 +92,16 @@ defmodule OriginSimulator.AdminRouter do
     |> send_resp(200, body)
   end
 
+  match _ do
+    conn
+    |> put_resp_content_type("text/plain")
+    |> allow_cors()
+    |> send_resp(404, "OK")
+  end
+
   def allow_cors(conn) do
     conn
     |> Plug.Conn.put_resp_header("Access-Control-Allow-Origin", "*")
+    |> Plug.Conn.put_resp_header("Access-Control-Allow-Methods", "*")
   end
 end
